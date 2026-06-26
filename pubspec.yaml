@@ -7,8 +7,13 @@ environment:
   sdk: ^3.12.2
 
 dependencies:
-  vyuh_node_flow: ^0.27.3
-  uuid: ^4.5.3
+  vyuh_node_flow: ^0.27.3 #for the graphs
+  uuid: ^4.5.3    #for giving unique ids to elements (specifically graph nodes)
+  sqflite: ^2.4.3 #for storing the graph data
+  sqflite_common_ffi: any
+
+
+  path: ^1.9.1  #for getting the path to the sqflite db
   flutter:
     sdk: flutter
 
