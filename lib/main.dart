@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:master_planner/TimelineRuler.dart';
 import 'package:master_planner/data/db.dart';
 import 'package:master_planner/data/model.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -156,16 +157,33 @@ class _GraphTaskViewState extends State<GraphTaskView> {
             ),
       
           Expanded(
-            child: NodeFlowEditor<TaskModel, dynamic>(
-                   controller: nodeFlowCon,
-                   theme: NodeFlowTheme.light, 
-                   nodeBuilder: (context,node) => Center(
-                      child: TextField(
-                        onChanged: (newData) =>{ nodeFlowCon.getNode(node.id)!.data.title = newData}, 
-                        controller: TextEditingController(text: node.data.title),
-                        textAlign: .center,),
-                      )
-                    ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: NodeFlowEditor<TaskModel, dynamic>(
+                       controller: nodeFlowCon,
+                       theme: NodeFlowTheme.light, 
+                       nodeBuilder: (context,node) => Center(
+                          child: TextField(
+                            onChanged: (newData) =>{ node.data.title = newData}, 
+                            controller: TextEditingController(text: node.data.title),
+                            textAlign: .center,),
+                          ),
+                       events: NodeFlowEvents(
+                        viewport: ViewportEvents(
+                          onMove: (viewPortState) {
+                            log("message");
+                          },
+                        )
+                       ),
+                     ),
+                ),
+                   //TimeRuler(canvasOffsetY: 0, zoom: 1, epoch: DateTime(2026,6,27), pxPerHour: 10),
+                      
+                ]
+            ),
+
+                   
           ),
       
         ],
@@ -276,89 +294,6 @@ class _TabbedTextTaskViewState extends State<TabbedTextTaskView> {
           Expanded(child: tabbedText == null ? CircularProgressIndicator() : TextField(readOnly: true, maxLines: null, decoration: InputDecoration(fillColor: Colors.black38), controller: TextEditingController(text: tabbedText),))
         ],
       ),  
-    );
-  }
-}
-
-
-//stratified tree view
-class StratifiedGraphTaskView extends StatelessWidget {
-  const StratifiedGraphTaskView({
-    super.key,
-    required this.nodeFlowCon,
-  });
-
-  final NodeFlowController<TaskModel, dynamic> nodeFlowCon;
-
-  //============================================= nav bar actions ==========================================
-  void _addNode(){
-    var nodeSize = Size(200,100);
-    nodeFlowCon.addNode(
-                  Node<TaskModel>(
-                    id: genUniqueID(), 
-                    type: 'default', position: Offset(100, 100), 
-                    data: TaskModel("taskTitle", null, null),
-                    size: nodeSize,
-                    ports: [
-                      Port(id: genUniqueID(), name: 'asf', type: PortType.input,position: PortPosition.top, offset: Offset(nodeSize.width/2,0), multiConnections: true),
-                      Port(id: genUniqueID(), name: 'asf2', type: PortType.output, position: PortPosition.top, offset: Offset(nodeSize.width/2,0), multiConnections: true),
-                      Port(id: genUniqueID(), name: 'asf3', type: PortType.input,position: PortPosition.bottom, offset: Offset(nodeSize.width/2,0), multiConnections: true),
-                      Port(id: genUniqueID(), name: 'asf4', type: PortType.output, position: PortPosition.bottom, offset: Offset(nodeSize.width/2,0), multiConnections: true)
-                      ]
-                  )
-                  );
-  }
-
-  void _saveGraph() async{
-    taskStorageDBHelper.saveGraph(nodeFlowCon.exportGraph().toJsonString());
-  }
-
-  void _loadGraph() async{
-    log(await taskStorageDBHelper.loadGraph());
-    nodeFlowCon.loadGraph(
-      NodeGraph.fromJson(
-        jsonDecode(await taskStorageDBHelper.loadGraph()),
-        (data) => TaskModel.fromJson(data as Map<String,dynamic>),
-        (data) => data
-      )
-    );
-  }
-
-  void test(){
-    log(nodeFlowCon.exportGraph().toJsonString());
-  }
-
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-        children: [
-          Row(
-              mainAxisAlignment: .center,children: [ 
-                IconButton(
-                  onPressed: _addNode
-                  ,icon: Icon(Icons.add)),
-                IconButton(onPressed: _saveGraph, icon: Icon(Icons.save)),
-                IconButton(onPressed: _loadGraph, icon: Icon(Icons.save_alt)),
-                IconButton(onPressed: test, icon: Icon(Icons.telegram))
-            
-              ],
-            ),
-      
-          Expanded(
-            child: NodeFlowEditor<TaskModel, dynamic>(
-                   controller: nodeFlowCon,
-                   theme: NodeFlowTheme.light, 
-                   nodeBuilder: (context,node) => Center(
-                      child: TextField(
-                        onChanged: (newData) =>{ nodeFlowCon.getNode(node.id)!.data.title = newData}, 
-                        controller: TextEditingController(text: node.data.title),
-                        textAlign: .center,),
-                      )
-                    ),
-          ),
-      
-        ],
     );
   }
 }
