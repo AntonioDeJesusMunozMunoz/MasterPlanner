@@ -86,7 +86,7 @@ class _GraphTaskViewState extends State<GraphTaskView> {
 
   //============================================= nav bar actions ==========================================
   void _addNode(){
-    
+    stratifiedGraphController.addNode(GraphNode(200.0,70.0,100.0,200.0));
   }
 
   void _saveGraph() async{
@@ -94,12 +94,11 @@ class _GraphTaskViewState extends State<GraphTaskView> {
   }
 
   void _loadGraph() async{
-    stratifiedGraphController.changeNode(graphNode(200.0,170.0,100.0,100.0), 0);
+
   }
 
   void test(){
     log("testies");
-    stratifiedGraphController.addNode(graphNode(200.0,70.0,100.0,100.0));
   }
 
   @override

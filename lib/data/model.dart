@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 class TaskModel {
@@ -7,11 +6,7 @@ class TaskModel {
   DateTime? dueDate; 
 
   //constructor
-  TaskModel (String title, String? description, DateTime? dueDate){
-    this.title = title;
-    this.description = description;
-    this.dueDate = dueDate;
-  }
+  TaskModel (this.title, this.description, this.dueDate);
 
   //serialization funcs
   Map<String,dynamic> toJson() {
