@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:master_planner/data/db.dart';
 import 'package:master_planner/data/model.dart';
+import 'package:master_planner/timelineAndGraph.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:uuid/uuid.dart';
 
@@ -34,10 +35,8 @@ class _MainAppState extends State<MainApp> {
   //======================================= VARS ==============================
   var currView = Views.stratifiedGraph;
 
-
   //========================================= FUNCS ==========================================
   void _changeView(Views newView) {
-    //taskStorageDBHelper.saveGraph(nodeFlowCon.exportGraph().toJsonString());//TODO i dont know how to save it now since nodeFlowCon now lives in that widget
     setState(() {
       currView = newView;
     });
@@ -83,6 +82,7 @@ class GraphTaskView extends StatefulWidget {
 }
 
 class _GraphTaskViewState extends State<GraphTaskView> {
+  GraphController stratifiedGraphController = GraphController();
 
   //============================================= nav bar actions ==========================================
   void _addNode(){
@@ -94,10 +94,12 @@ class _GraphTaskViewState extends State<GraphTaskView> {
   }
 
   void _loadGraph() async{
+    stratifiedGraphController.changeNode(graphNode(200.0,170.0,100.0,100.0), 0);
   }
 
   void test(){
-
+    log("testies");
+    stratifiedGraphController.addNode(graphNode(200.0,70.0,100.0,100.0));
   }
 
   @override
@@ -119,11 +121,8 @@ class _GraphTaskViewState extends State<GraphTaskView> {
       
           Expanded(
             child: Row(
-              children: [
-                Expanded(
-                  child:SizedBox()
-                ),
-                           
+              children: [ 
+                Expanded(child: timelineAndGraphWidget(graphController: stratifiedGraphController))    
               ]
             ),
           ),    
