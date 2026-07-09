@@ -6,7 +6,6 @@ import 'package:master_planner/data/model.dart';
 import 'package:master_planner/main.dart';
 import 'package:master_planner/timelineAndGraph.dart';
 import 'package:master_planner/viewModel/tasksSOT.dart';
-import 'package:uuid/uuid.dart';
 
 /*
 * INTERFACE CLASS FOR COMUNICATING THE TASKS
@@ -66,7 +65,7 @@ class GraphViewModel {
     List<GraphNode> newNodes = List.empty(growable: true);
     List<GraphConnections> newConnections  = List.empty(growable: true);
 
-    Offset startPos = Offset(300, 50);
+    Offset startPos = Offset(1000, 500);
     Set<String> visitedTasks = Set.of({});
 
     //bfs that creates task and assigns connections and position 

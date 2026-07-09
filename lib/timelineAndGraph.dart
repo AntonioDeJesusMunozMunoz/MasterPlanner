@@ -72,112 +72,123 @@ class _timelineAndGraphWidgetState extends State<timelineAndGraphWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox.expand(
-      child: GestureDetector(
-        onTapUp:(onTapUpDetails) {
-          for (var node in widget.graphController.nodes) {
-            if( aabb(node, onTapUpDetails.localPosition)){
-              log("touched");
-            }
-
-            if (circleCollision(node.topPort, widget.graphController.portRadius, onTapUpDetails.localPosition)){
-              log("touched top port");
-            }
-
-            if (circleCollision(node.bottomPort, widget.graphController.portRadius, onTapUpDetails.localPosition)){
-              log("touched bottom port");
-            }
-          }
-        },
-        
-        onPanStart: (onPanDetails) {
-          GraphNode? touchedNode = getTouchedNode(onPanDetails.localPosition);
-
-          //if it touched a node, start moving the node
-          if (touchedNode != null){
-            draggedNodeInd = widget.graphController.nodes.indexWhere((node) => node.pos == touchedNode!.pos);
-          } 
-          //otherwise, check if it touched a port
-          else {
-            for (var node in widget.graphController.nodes) {
-
-              //check if it collided with any port and save it 
-
-              //if it collided with the top port, set the flag to false to signal its going to be the end port
-              if (circleCollision(node.topPort, widget.graphController.portRadius, onPanDetails.localPosition)){
-                newConnGrabbedNode = node;
-                newConnStartOrEndPort = false;
-                makingConnection = true;
-
-              //else, do the oposite with the bottom port
-              } else if (circleCollision(node.bottomPort, widget.graphController.portRadius, onPanDetails.localPosition)){
-                newConnGrabbedNode = node;
-                newConnStartOrEndPort = true;
-                makingConnection = true;
-              }
-            }
-          }
-        },
-
-        onPanUpdate: (details) {
-          if (draggedNodeInd != null){
-              //update pos
-              widget.graphController.moveNode(draggedNodeInd!, details.delta);
-
-          } else if (makingConnection) {
-            log("${details.localPosition}");
-            if (newConnStartOrEndPort){
-              widget.graphController.setNewConnection(GraphConnections(newConnGrabbedNode!, GraphNode(details.localPosition.dx,details.localPosition.dy,1,1)));
-            } else {
-              widget.graphController.setNewConnection(GraphConnections(GraphNode(details.localPosition.dx,details.localPosition.dy,1,1), newConnGrabbedNode!));
-            }
-          }
-        },
-
-        onPanEnd: (details) {
-          //si se estaba haciendo una conexion
-          if (makingConnection){
-            GraphNode? selectedNode;
-
-            //checo si el final esta lo suficientemente cerca de algun nodo opuesto
-            if (newConnStartOrEndPort) {
-              for (var node in widget.graphController.nodes) {
-                //if the top port is close enough, it marks it as the selected one
-                if (circleCollision(node.topPort, widget.graphController.portRadius + 5, details.localPosition)) {
-                  selectedNode = node;
-                  break;
-                }
-              }
-            } else {
-              for (var node in widget.graphController.nodes) {
-                //if the top port is close enough, it marks it as the selected one
-                if (circleCollision(node.bottomPort, widget.graphController.portRadius + 5, details.localPosition)) {
-                  selectedNode = node;
-                  break;
-                }
-              }
-            }
-
-            //si si esta lo suficientemente cerca de un puerto, crea la conexion
-            if (selectedNode != null) {
-              if (newConnStartOrEndPort) {
-                widget.graphController.addConnection(GraphConnections(newConnGrabbedNode!, selectedNode));
-              } else {
-                widget.graphController.addConnection(GraphConnections(selectedNode, newConnGrabbedNode!));
-              }
-            }
-          }
-
-          makingConnection = false;
-          newConnGrabbedNode = null;
-          widget.graphController.destroyNewConnection();
-          draggedNodeInd = null;
-        },
-        
-        child: CustomPaint(
-          painter: painter,
-        ),
-      ),
+    return InteractiveViewer(
+        minScale: 0.1,
+        maxScale: 4,
+        boundaryMargin: EdgeInsets.zero,
+        constrained: false,
+        child: SizedBox(
+            width: 20000,
+            height: 10000,
+            child: Container(//keep this for debug
+              decoration: BoxDecoration(color: const Color.fromARGB(255, 64, 203, 238)),
+              child: GestureDetector(
+                onTapUp:(onTapUpDetails) {
+                  for (var node in widget.graphController.nodes) {
+                    if( aabb(node, onTapUpDetails.localPosition)){
+                      log("touched");
+                    }
+                    
+                    if (circleCollision(node.topPort, widget.graphController.portRadius, onTapUpDetails.localPosition)){
+                      log("touched top port");
+                    }
+                    
+                    if (circleCollision(node.bottomPort, widget.graphController.portRadius, onTapUpDetails.localPosition)){
+                      log("touched bottom port");
+                    }
+                  }
+                },
+                
+                onPanStart: (onPanDetails) {
+                  GraphNode? touchedNode = getTouchedNode(onPanDetails.localPosition);
+                    
+                  //if it touched a node, start moving the node
+                  if (touchedNode != null){
+                    draggedNodeInd = widget.graphController.nodes.indexWhere((node) => node.pos == touchedNode!.pos);
+                  } 
+                  //otherwise, check if it touched a port
+                  else {
+                    for (var node in widget.graphController.nodes) {
+                    
+                      //check if it collided with any port and save it 
+                    
+                      //if it collided with the top port, set the flag to false to signal its going to be the end port
+                      if (circleCollision(node.topPort, widget.graphController.portRadius, onPanDetails.localPosition)){
+                        newConnGrabbedNode = node;
+                        newConnStartOrEndPort = false;
+                        makingConnection = true;
+                    
+                      //else, do the oposite with the bottom port
+                      } else if (circleCollision(node.bottomPort, widget.graphController.portRadius, onPanDetails.localPosition)){
+                        newConnGrabbedNode = node;
+                        newConnStartOrEndPort = true;
+                        makingConnection = true;
+                      }
+                    }
+                  }
+                },
+                    
+                onPanUpdate: (details) {
+                  if (draggedNodeInd != null){
+                      //update pos
+                      widget.graphController.moveNode(draggedNodeInd!, details.delta);
+                    
+                  } else if (makingConnection) {
+                    log("${details.localPosition}");
+                    if (newConnStartOrEndPort){
+                      widget.graphController.setNewConnection(GraphConnections(newConnGrabbedNode!, GraphNode(details.localPosition.dx,details.localPosition.dy,1,1)));
+                    } else {
+                      widget.graphController.setNewConnection(GraphConnections(GraphNode(details.localPosition.dx,details.localPosition.dy,1,1), newConnGrabbedNode!));
+                    }
+                  }
+                },
+                    
+                onPanEnd: (details) {
+                  //si se estaba haciendo una conexion
+                  if (makingConnection){
+                    GraphNode? selectedNode;
+                    
+                    //checo si el final esta lo suficientemente cerca de algun nodo opuesto
+                    if (newConnStartOrEndPort) {
+                      for (var node in widget.graphController.nodes) {
+                        //if the top port is close enough, it marks it as the selected one
+                        if (circleCollision(node.topPort, widget.graphController.portRadius + 5, details.localPosition)) {
+                          selectedNode = node;
+                          break;
+                        }
+                      }
+                    } else {
+                      for (var node in widget.graphController.nodes) {
+                        //if the top port is close enough, it marks it as the selected one
+                        if (circleCollision(node.bottomPort, widget.graphController.portRadius + 5, details.localPosition)) {
+                          selectedNode = node;
+                          break;
+                        }
+                      }
+                    }
+                    
+                    //si si esta lo suficientemente cerca de un puerto, crea la conexion
+                    if (selectedNode != null) {
+                      if (newConnStartOrEndPort) {
+                        widget.graphController.addConnection(GraphConnections(newConnGrabbedNode!, selectedNode));
+                      } else {
+                        widget.graphController.addConnection(GraphConnections(selectedNode, newConnGrabbedNode!));
+                      }
+                    }
+                  }
+                    
+                  makingConnection = false;
+                  newConnGrabbedNode = null;
+                  widget.graphController.destroyNewConnection();
+                  draggedNodeInd = null;
+                },
+                
+                child: CustomPaint(
+                  painter: painter,
+                ),
+              ),
+            ),
+          ),
     );
   }
 }
@@ -203,6 +214,18 @@ class timelineAndGraphPainter extends CustomPainter{
 
   @override
   void paint(Canvas canvas, Size size) {
+    // NEW: draw dot grid background first, so everything else draws on top
+    final dotPaint = Paint()..color = Colors.black26;
+    const spacing = 50.0;
+    const dotRadius = 2.0;
+
+    for (double x = 0; x < size.width; x += spacing) {
+      for (double y = 0; y < size.height; y += spacing) {
+        canvas.drawCircle(Offset(x, y), dotRadius, dotPaint);
+      }
+    }
+
+
     //draw connections
     for (var connection in controller.conns) {
       canvas.drawLine(connection.startNode.bottomPort, connection.endNode.topPort, connectionPaint);
