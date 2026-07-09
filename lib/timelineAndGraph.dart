@@ -233,7 +233,7 @@ class timelineAndGraphPainter extends CustomPainter{
 }
 
 class GraphController extends ChangeNotifier {
-  List<GraphNode> nodes = List<GraphNode>.empty(growable: true);
+  List<GraphNode> nodes = List<GraphNode>.empty(growable: true); //TODO make it cear you shouldnt touch this directly
   List<GraphConnections> conns = List<GraphConnections>.empty(growable: true);
   double portRadius = 6;
   GraphConnections? newConnection;
@@ -260,6 +260,12 @@ class GraphController extends ChangeNotifier {
 
   void addConnection(GraphConnections conn) {
     conns.add(conn);
+    notifyListeners();
+  }
+
+  void replaceNodes(List<GraphNode> newNodes, List<GraphConnections> newConns){
+    nodes = newNodes;
+    conns = newConns;
     notifyListeners();
   }
 }

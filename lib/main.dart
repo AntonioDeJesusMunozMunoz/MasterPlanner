@@ -5,19 +5,86 @@ import 'package:flutter/material.dart';
 import 'package:master_planner/data/db.dart';
 import 'package:master_planner/data/model.dart';
 import 'package:master_planner/timelineAndGraph.dart';
+import 'package:master_planner/viewModel/graphViewModel.dart';
+import 'package:master_planner/viewModel/tasksSOT.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:uuid/uuid.dart';
 
+//constants
 var uuid = Uuid();
 enum Views {graph,tabbedText,stratifiedGraph}
 
+//view variables
+TasksSOT tasksSot = TasksSOT();
+late GraphViewModel graphVM;
+
+GraphController stratifiedGraphController = GraphController();
+
 //===================================================HELPERS==============================
-String genUniqueID() {return uuid.v4();}
 
 //Main func
 void main() {
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
+
+  graphVM =  GraphViewModel(sot: tasksSot, graphController: stratifiedGraphController);
+
+  //TODO remove test data
+  final testTaskTree = TaskModel(
+  "Launch Personal Website",
+  "Build and deploy portfolio site",
+  DateTime(2026, 8, 15),
+  [
+    TaskModel(
+      "Design",
+      "UI/UX mockups",
+      DateTime(2026, 7, 20),
+      [
+        TaskModel("Wireframes", null, DateTime(2026, 7, 12)),
+        TaskModel("Color palette & typography", null, DateTime(2026, 7, 15)),
+        TaskModel(
+          "High-fidelity mockups",
+          "Figma final pass",
+          DateTime(2026, 7, 19),
+        ),
+      ],
+    ),
+    TaskModel(
+      "Development",
+      "Frontend + backend",
+      DateTime(2026, 8, 5),
+      [
+        TaskModel("Set up project scaffold", null, DateTime(2026, 7, 22)),
+        TaskModel(
+          "Build homepage",
+          null,
+          null,
+          [
+            TaskModel("Hero section"),
+            TaskModel("Projects grid"),
+          ],
+        ),
+        TaskModel("Contact form", "Hook up email service"),
+        // no dueDate, no subtasks — null-safety edge case
+      ],
+    ),
+    TaskModel(
+      "Deployment",
+      null,
+      DateTime(2026, 8, 14),
+      [
+        TaskModel("Buy domain"),
+        TaskModel("Configure DNS"),
+        TaskModel("Deploy to hosting", "Cloudflare Pages"),
+      ],
+    ),
+    TaskModel("Leaf task with no subtasks and no description"),
+  ],
+);
+
+
+  tasksSot.addTask(testTaskTree);
+
   runApp(const MainApp());
 }
 
@@ -82,8 +149,6 @@ class GraphTaskView extends StatefulWidget {
 }
 
 class _GraphTaskViewState extends State<GraphTaskView> {
-  GraphController stratifiedGraphController = GraphController();
-
   //============================================= nav bar actions ==========================================
   void _addNode(){
     stratifiedGraphController.addNode(GraphNode(200.0,70.0,100.0,200.0));
@@ -94,11 +159,12 @@ class _GraphTaskViewState extends State<GraphTaskView> {
   }
 
   void _loadGraph() async{
-
+    
   }
 
   void test(){
     log("testies");
+    tasksSot.createTask();
   }
 
   @override
@@ -124,7 +190,7 @@ class _GraphTaskViewState extends State<GraphTaskView> {
                 Expanded(child: timelineAndGraphWidget(graphController: stratifiedGraphController))    
               ]
             ),
-          ),    
+          ),
         ],
     );
   }
