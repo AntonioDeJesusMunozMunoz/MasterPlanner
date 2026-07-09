@@ -9,14 +9,15 @@ import 'package:flutter/material.dart';
 class GraphNode{
   late Offset pos;//position is the id as to not allow 2 nodes to be in the same place
   late Size size;
+  String uuid = ""; 
 
-  GraphNode(double x,double y,double long, double tall){
+  GraphNode(double x,double y,double long, double tall, {this.uuid = ""}){
     pos = Offset(x, y);
     size = Size(long, tall);
   }
 
-  Offset get topPort => Offset(this.pos.dx + this.size.width/2, this.pos.dy-5);
-  Offset get bottomPort => Offset(this.pos.dx + this.size.width/2, this.pos.dy + this.size.height+5);
+  Offset get topPort => Offset(pos.dx + size.width/2, pos.dy-5);
+  Offset get bottomPort => Offset(pos.dx + size.width/2, pos.dy + size.height+5);
 } 
 
 class GraphConnections{
@@ -256,27 +257,52 @@ class timelineAndGraphPainter extends CustomPainter{
 }
 
 class GraphController extends ChangeNotifier {
-  List<GraphNode> nodes = List<GraphNode>.empty(growable: true); //TODO make it cear you shouldnt touch this directly
+  List<GraphNode> nodes = List<GraphNode>.empty(growable: true); //TODO make it clear you shouldnt touch this directly
   List<GraphConnections> conns = List<GraphConnections>.empty(growable: true);
   double portRadius = 6;
   GraphConnections? newConnection;
 
-  void addNode(GraphNode newNode){
-    nodes.add(newNode);//add node
+  //callbacks
+  void Function(GraphNode nodeAdded)? onNodeAddedCallback;
+  void Function(GraphNode nodeDeleted)? onNodeDeletedCallback;
+  void Function(GraphNode nodeMoved)? onNodeMovedCallback;
+  void Function(GraphConnections connAdded)? onConnectionAddedCallback;
+  void Function(GraphConnections connRemoved)? onConnectionRemovedCallback;
+  void Function()? onGraphReplacedCallback;
+
+  void addNode(GraphNode newNode) {
+    nodes.add(newNode); //add node
     notifyListeners();
+
+    onNodeAddedCallback?.call(newNode);
+  }
+
+  void deleteNode(int nodeInd) {
+    final removedNode = nodes.removeAt(nodeInd);
+
+    // also drop any connections that referenced this node, so you don't
+    // end up with dangling GraphConnections pointing at a removed node
+    conns.removeWhere((conn) =>
+        identical(conn.startNode, removedNode) || identical(conn.endNode, removedNode));
+
+    notifyListeners();
+
+    onNodeDeletedCallback?.call(removedNode);
   }
 
   void moveNode(int nodeInd, Offset delta) {
     nodes[nodeInd].pos += delta;
     notifyListeners();
+
+    onNodeMovedCallback?.call(nodes[nodeInd]);
   }
 
-  void setNewConnection(GraphConnections newConData){
-   newConnection = newConData;
-   notifyListeners();
+  void setNewConnection(GraphConnections newConData) {
+    newConnection = newConData;
+    notifyListeners();
   }
 
-  void destroyNewConnection(){
+  void destroyNewConnection() {
     newConnection = null;
     notifyListeners();
   }
@@ -284,11 +310,22 @@ class GraphController extends ChangeNotifier {
   void addConnection(GraphConnections conn) {
     conns.add(conn);
     notifyListeners();
+
+    onConnectionAddedCallback?.call(conn);
   }
 
-  void replaceNodes(List<GraphNode> newNodes, List<GraphConnections> newConns){
+  void removeConnection(GraphConnections conn) {
+    conns.remove(conn);
+    notifyListeners();
+
+    onConnectionRemovedCallback?.call(conn);
+  }
+
+  void replaceNodes(List<GraphNode> newNodes, List<GraphConnections> newConns) {
     nodes = newNodes;
     conns = newConns;
     notifyListeners();
+
+    onGraphReplacedCallback?.call();
   }
 }

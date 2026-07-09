@@ -12,7 +12,7 @@ class TaskModel {
   List<TaskModel> subtasks = List.empty(growable: true);
 
   //constructor
-  TaskModel (this.title, [this.description, this.dueDate,  this.subtasks = const []]);
+  TaskModel (this.title, [this.description, this.dueDate,  List<TaskModel>? subtasks]) : subtasks = subtasks ?? [];
 
   //serialization funcs
   Map<String,dynamic> toJson() {

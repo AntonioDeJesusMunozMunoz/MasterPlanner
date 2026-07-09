@@ -25,9 +25,6 @@ class taskStorageDBHelper {
 
    }
 
-
-
-
    //on create method for the openDatabase function, basically the querys to create the db
    static Future<void> _onCreate(Database db, int version) async {
       await db.transaction( ((txn) async {

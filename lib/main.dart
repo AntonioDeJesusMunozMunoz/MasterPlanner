@@ -151,7 +151,8 @@ class GraphTaskView extends StatefulWidget {
 class _GraphTaskViewState extends State<GraphTaskView> {
   //============================================= nav bar actions ==========================================
   void _addNode(){
-    stratifiedGraphController.addNode(GraphNode(200.0,70.0,100.0,200.0));
+    graphVM.addTaskNode();
+    //stratifiedGraphController.addNode(GraphNode(200.0,70.0,100.0,200.0));
   }
 
   void _saveGraph() async{
@@ -159,12 +160,12 @@ class _GraphTaskViewState extends State<GraphTaskView> {
   }
 
   void _loadGraph() async{
-    
+
   }
 
   void test(){
     log("testies");
-    tasksSot.createTask();
+    graphVM.addTaskNode();
   }
 
   @override

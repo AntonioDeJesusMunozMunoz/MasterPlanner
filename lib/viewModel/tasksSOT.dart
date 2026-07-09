@@ -7,7 +7,7 @@ how does the view model reconcile the sot and the view
 -it has access to the controller
 
 3 TYPES OF CHANGES
--truth to view
+-truth to view@
 	-delete task
 	-add task
 	-modify task
