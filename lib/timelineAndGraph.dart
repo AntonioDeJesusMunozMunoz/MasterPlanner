@@ -92,6 +92,7 @@ class _timelineAndGraphWidgetState extends State<timelineAndGraphWidget> {
                       log("touched");
                       widget.graphController.selectedNode = node;
                       touchedNothing = false;
+                      widget.graphController.moveNode(0, Offset.zero);//TODO this is so the canvas repaints, there must be a better way
                       break;
                     }
                     
@@ -112,7 +113,7 @@ class _timelineAndGraphWidgetState extends State<timelineAndGraphWidget> {
                 
                 onPanStart: (onPanDetails) {
                   GraphNode? touchedNode = getTouchedNode(onPanDetails.localPosition);
-                    
+                  widget.graphController.selectedNode = touchedNode;
                   //if it touched a node, start moving the node
                   if (touchedNode != null){
                     draggedNodeInd = widget.graphController.nodes.indexWhere((node) => node.pos == touchedNode!.pos);
@@ -209,6 +210,7 @@ class timelineAndGraphPainter extends CustomPainter{
   Paint portPaint = Paint();
   Paint connectionPaint = Paint();
   Paint newConnectionPaint = Paint();
+  Paint nodeHighlightPaint = Paint();
   final GraphController controller;
 
   timelineAndGraphPainter(this.controller) : super(repaint: controller) {
@@ -220,7 +222,9 @@ class timelineAndGraphPainter extends CustomPainter{
     connectionPaint.strokeWidth = 7;
     newConnectionPaint.color = Colors.blueGrey;
     newConnectionPaint.strokeWidth = 7;
-    
+    nodeHighlightPaint.style = PaintingStyle.stroke;
+    nodeHighlightPaint.color = Colors.red;
+    nodeHighlightPaint.strokeWidth = 10;
   }
 
   @override
@@ -246,6 +250,11 @@ class timelineAndGraphPainter extends CustomPainter{
     for (var node in controller.nodes) {
       //draw body
       canvas.drawRect(Rect.fromLTWH(node.pos.dx, node.pos.dy, node.size.width, node.size.height), nodePaint);
+
+      //highlight selected
+      if (identical(node, controller.selectedNode)){
+        canvas.drawRect(Rect.fromLTWH(node.pos.dx, node.pos.dy, node.size.width, node.size.height),nodeHighlightPaint);
+      }
 
       //draw ports
       canvas.drawCircle(node.topPort, controller.portRadius, portPaint);
