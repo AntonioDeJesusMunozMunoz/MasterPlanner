@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:master_planner/data/model.dart';
 
@@ -12,13 +14,14 @@ how does the view model reconcile the sot and the view
 	-add task
 	-modify task
 -view to truth
-	-delete node
-	-add node
-	-add connection
+	-delete node@
+	-add node@
+	-add connection@
+  -delete connection
 -view to visualization
 	-affects data specific to the visualization 
   ex:
-		-node position
+		-node position@
 		-zoom
 		-pan
 
@@ -46,8 +49,8 @@ class TasksSOT extends ChangeNotifier {
   }
 
   //delete task, deletes a task by instance
-  void deleteTask(TaskModel instance){
-    tasks.remove(instance);
+  void deleteTask(String uuid){
+    tasks.removeWhere((currTask) {log(currTask.uuid); log(uuid); return currTask.uuid == uuid;});
     notifyListeners();
   }
 

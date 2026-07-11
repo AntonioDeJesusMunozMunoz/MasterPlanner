@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:master_planner/data/db.dart';
 import 'package:master_planner/data/model.dart';
 import 'package:master_planner/timelineAndGraph.dart';
@@ -14,19 +15,24 @@ import 'package:uuid/uuid.dart';
 var uuid = Uuid();
 enum Views {graph,tabbedText,stratifiedGraph}
 
-//view variables
+//===================== view variables =================================
 TasksSOT tasksSot = TasksSOT();
-late GraphViewModel graphVM;
 
+//graphView
+late GraphViewModel graphVM;
 GraphController stratifiedGraphController = GraphController();
 
-//===================================================HELPERS==============================
 
+//==================== INTENTS FOR KEYBOARD ASSIGNMENTS =====================
+class DeleteIntent extends Intent {
+
+}
+
+//==================== MAIN, AS IN THE FUNC AND THE WIDGET ==================
 //Main func
 void main() {
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
-
   graphVM =  GraphViewModel(sot: tasksSot, graphController: stratifiedGraphController);
 
   //TODO remove test data
@@ -82,7 +88,6 @@ void main() {
   ],
 );
 
-
   tasksSot.addTask(testTaskTree);
 
   runApp(const MainApp());
@@ -98,11 +103,10 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-
-  //======================================= VARS ==============================
+  //VARS
   var currView = Views.stratifiedGraph;
 
-  //========================================= FUNCS ==========================================
+  //FUNCS 
   void _changeView(Views newView) {
     setState(() {
       currView = newView;
@@ -111,25 +115,37 @@ class _MainAppState extends State<MainApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home:  Scaffold(
-        appBar: AppBar(backgroundColor: Colors.lightGreen,),
-        drawer: Drawer(
-          child: ListView(
-            children: [
-              DrawerHeader(child: Icon(Icons.line_axis)),
-              ListTile(leading: Icon(Icons.account_tree), title: Text('Graph'), onTap: () => _changeView(Views.graph)),
-              ListTile(leading: Icon(Icons.text_fields), title: Text('Tabbed text'), onTap: () => _changeView(Views.tabbedText)),
-              ListTile(leading: Icon(Icons.calendar_month), title: Text('Calendar'), onTap: () => _changeView(Views.graph)),
-              ListTile(leading: Icon(Icons.account_tree_outlined), title: Text('Stratified tree'), onTap: () => _changeView(Views.stratifiedGraph)),
-            ],
+    return Shortcuts(
+      shortcuts: {LogicalKeySet(LogicalKeyboardKey.delete) : DeleteIntent()},
+      child: Actions(
+        actions: {
+          DeleteIntent : CallbackAction<DeleteIntent>(
+            onInvoke: (intent) {
+              graphVM.deleteSelectedTaskNode();
+            },
+          )
+        },
+        child: MaterialApp(
+          home:  Scaffold(
+            appBar: AppBar(backgroundColor: Colors.lightGreen,),
+            drawer: Drawer(
+              child: ListView(
+                children: [
+                  DrawerHeader(child: Icon(Icons.line_axis)),
+                  ListTile(leading: Icon(Icons.account_tree), title: Text('Graph'), onTap: () => _changeView(Views.graph)),
+                  ListTile(leading: Icon(Icons.text_fields), title: Text('Tabbed text'), onTap: () => _changeView(Views.tabbedText)),
+                  ListTile(leading: Icon(Icons.calendar_month), title: Text('Calendar'), onTap: () => _changeView(Views.graph)),
+                  ListTile(leading: Icon(Icons.account_tree_outlined), title: Text('Stratified tree'), onTap: () => _changeView(Views.stratifiedGraph)),
+                ],
+              ),
+            ),
+            body: switch (currView) {
+              Views.graph => GraphTaskView(),
+              Views.tabbedText => TabbedTextTaskView(),
+              _ => Column()
+            }
           ),
         ),
-        body: switch (currView) {
-          Views.graph => GraphTaskView(),
-          Views.tabbedText => TabbedTextTaskView(),
-          _ => Column()
-        }
       ),
     );
   }
@@ -152,7 +168,6 @@ class _GraphTaskViewState extends State<GraphTaskView> {
   //============================================= nav bar actions ==========================================
   void _addNode(){
     graphVM.addTaskNode();
-    //stratifiedGraphController.addNode(GraphNode(200.0,70.0,100.0,200.0));
   }
 
   void _saveGraph() async{

@@ -48,7 +48,7 @@ class GraphViewModel {
   }
 
   void _deleteTaskNode(GraphNode node){
-    sot.tasks.removeWhere((task) => task.uuid == node.uuid);//TODO ahorita no eliminar hijos, eso esta bien, pero no se si sea lo que se quiera al final
+    sot.deleteTask(node.uuid);//TODO ahorita no eliminar hijos, eso esta bien, pero no se si sea lo que se quiera al final
   }
 
   void _updateNodeVisualizationData(GraphNode node){
@@ -124,5 +124,9 @@ class GraphViewModel {
   //=================================== methods for the view ============================
   void addTaskNode(){
     sot.addTask(TaskModel("new task"));
+  }
+
+  void deleteSelectedTaskNode(){
+    graphController.deleteSelectedNode();//absolutely crazy workflow, this calls graph controller which calls this._deleteTaskNode which calls the sot
   }
 }

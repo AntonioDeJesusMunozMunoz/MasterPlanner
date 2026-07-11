@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 
 //===================================== HELPER CLASSES =========================================
-// single node from the timeline widget,has pos x,y and ofset long and tall
+// single node from the timeline idget,has pos x,y and ofset long and tall
 class GraphNode{
   late Offset pos;//position is the id as to not allow 2 nodes to be in the same place
   late Size size;
@@ -58,7 +58,6 @@ class _timelineAndGraphWidgetState extends State<timelineAndGraphWidget> {
   bool newConnStartOrEndPort = true;//true == start, false == end
   GraphNode? newConnGrabbedNode;
 
-
   GraphNode? getTouchedNode(Offset pos){
     //go over every node and return only the one touched
     for (var node in widget.graphController.nodes) {
@@ -85,9 +84,15 @@ class _timelineAndGraphWidgetState extends State<timelineAndGraphWidget> {
               decoration: BoxDecoration(color: const Color.fromARGB(255, 64, 203, 238)),
               child: GestureDetector(
                 onTapUp:(onTapUpDetails) {
+                  bool touchedNothing = true;
+
+                  //logic for selecting
                   for (var node in widget.graphController.nodes) {
                     if( aabb(node, onTapUpDetails.localPosition)){
                       log("touched");
+                      widget.graphController.selectedNode = node;
+                      touchedNothing = false;
+                      break;
                     }
                     
                     if (circleCollision(node.topPort, widget.graphController.portRadius, onTapUpDetails.localPosition)){
@@ -97,6 +102,11 @@ class _timelineAndGraphWidgetState extends State<timelineAndGraphWidget> {
                     if (circleCollision(node.bottomPort, widget.graphController.portRadius, onTapUpDetails.localPosition)){
                       log("touched bottom port");
                     }
+                  }
+
+                  //logic for deselecting
+                  if (touchedNothing){
+                    widget.graphController.selectedNode = null;
                   }
                 },
                 
@@ -261,6 +271,7 @@ class GraphController extends ChangeNotifier {
   List<GraphConnections> conns = List<GraphConnections>.empty(growable: true);
   double portRadius = 6;
   GraphConnections? newConnection;
+  GraphNode? selectedNode;
 
   //callbacks
   void Function(GraphNode nodeAdded)? onNodeAddedCallback;
@@ -277,8 +288,22 @@ class GraphController extends ChangeNotifier {
     onNodeAddedCallback?.call(newNode);
   }
 
-  void deleteNode(int nodeInd) {
-    final removedNode = nodes.removeAt(nodeInd);
+  void deleteSelectedNode(){
+    //first safeguard for deleting non existing node
+    if (selectedNode == null){
+      log("tried to delete without a node selected");
+      return;
+    }
+
+    //then delete it
+    deleteNode(selectedNode!);
+
+    //then deselect it 
+    selectedNode = null;
+  }
+
+  void deleteNode(GraphNode removedNode) {
+    nodes.remove(removedNode);
 
     // also drop any connections that referenced this node, so you don't
     // end up with dangling GraphConnections pointing at a removed node
