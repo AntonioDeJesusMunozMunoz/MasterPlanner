@@ -9,10 +9,10 @@ class TaskModel {
   String title = "task title";
   String? description;
   DateTime? dueDate; 
-  List<TaskModel> subtasks = List.empty(growable: true);
+  List<TaskModel> subtasks = List.empty(growable: true); //claude: reverted to plain List<TaskModel>, no longer using WeakReference
 
   //constructor
-  TaskModel (this.title, [this.description, this.dueDate,  List<TaskModel>? subtasks]) : subtasks = subtasks ?? [];
+  TaskModel (this.title, [this.description, this.dueDate,  List<TaskModel>? subtasks]) : subtasks = subtasks ?? []; //claude: reverted constructor param type to List<TaskModel>?
 
   //serialization funcs
   Map<String,dynamic> toJson() {

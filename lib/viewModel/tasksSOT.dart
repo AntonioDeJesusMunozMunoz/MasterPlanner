@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -41,7 +42,6 @@ class TasksSOT extends ChangeNotifier {
   //list of all tasksa
   final List<TaskModel> tasks = List.empty(growable: true);//TODO make it cear you shouldnt touch this directly
 
-
   //create a task
   void createTask(){
     tasks.add(TaskModel("newTask"));
@@ -50,18 +50,37 @@ class TasksSOT extends ChangeNotifier {
 
   //delete task, deletes a task by instance
   void deleteTask(String uuid){
-    tasks.removeWhere((currTask) {log(currTask.uuid); log(uuid); return currTask.uuid == uuid;});
+    log("tasks before: ${tasks.length}");
+    tasks.removeWhere((currTask) {return currTask.uuid == uuid;});
+    log("tasks after: ${tasks.length}");
+    pruneDeadSubtasks();
     notifyListeners();
   }
 
   //add an externally created task
   void addTask(TaskModel task){
     this.tasks.add(task);
+    log("tasks after adding new one: ${tasks.length}");
     notifyListeners();
+  }
+
+  //checks whether a given TaskModel instance is still present in tasks, so other view models (that can't see this list directly) can verify a task still exists //claude: new method, replaces the old WeakReference.target == null check
+  bool containsTask(TaskModel task){
+    return tasks.any((currTask) => identical(currTask, task));
   }
 
   //load data from memory
 
   //save data to memory
 
+
+  // ================================ HELPERS =========================
+  void pruneDeadSubtasks(){
+    log("PRUNNING DEADA SUBTasks");
+    //por cada task
+    for (var currTask in tasks){
+      //remove any subtask reference that no longer exists in tasks //claude: reverted from WeakReference null-check to a containsTask lookup
+      currTask.subtasks.removeWhere((subtask) => !containsTask(subtask));
+    }
+  }
 }

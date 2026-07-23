@@ -32,23 +32,23 @@ class GraphViewModel {
     
     //set graph callbacks
     graphController.onConnectionAddedCallback = _addConnection;
-    graphController.onNodeDeletedCallback = _deleteTaskNode; //TODO code for this guy was added BUT NEVER TESTED because you cant even delete nodes yet
+    graphController.onNodeDeletedCallback = _deleteTaskNode;
     graphController.onNodeMovedCallback = _updateNodeVisualizationData;
   }
 
   //listeners
   void _updateGraph(){
-    log("truth changed, billions must die");
     buildGraph();
   }
 
   void _addConnection(GraphConnections conn){
-    TaskModel parentTask = sot.tasks.firstWhere((task) {log(task.uuid); return task.uuid == conn.startNode.uuid;});
-    parentTask.subtasks.add(sot.tasks.firstWhere((task) => task.uuid == conn.endNode.uuid));
+    TaskModel parentTask = sot.tasks.firstWhere((task) {return task.uuid == conn.startNode.uuid;}); //claude: reverted, no longer unwrapping .target
+    parentTask.subtasks.add(sot.tasks.firstWhere((task) => task.uuid == conn.endNode.uuid)); //claude: reverted, adding the TaskModel directly instead of wrapping in WeakReference
   }
 
   void _deleteTaskNode(GraphNode node){
     sot.deleteTask(node.uuid);//TODO ahorita no eliminar hijos, eso esta bien, pero no se si sea lo que se quiera al final
+    //sot.tasks.removeWhere((currTask) {return currTask.uuid == node.uuid;});
   }
 
   void _updateNodeVisualizationData(GraphNode node){
@@ -60,15 +60,13 @@ class GraphViewModel {
     //load visualization data if i have
     NodeVisualizationData? vizData = idToVisualizationData[currTask.uuid];
 
-    log('antes del if');
-
     if (vizData != null){
-      log("si corre el if");
       posOffset = vizData.nodePos;
     }
 
     //create and add curr node
     GraphNode currNode = GraphNode(posOffset.dx, posOffset.dy, 200, 100, uuid: currTask.uuid);
+    log("task to be added: ${currNode.uuid}, parent: ${parent}");
     newNodes.add(currNode);
 
     //create connection if has a parent
@@ -81,14 +79,20 @@ class GraphViewModel {
 
     //repeat for children
     for (var child in currTask.subtasks) {
-      //skip visited
-      if (visitedTasks.contains(child.uuid)){
+      //skip subtasks that no longer exist in the sot //claude: reverted from a null .target check to a sot.containsTask lookup, since subtasks is now a plain List<TaskModel>
+      if (!sot.containsTask(child)){
+        log("THIS SHOULD NEVER RUN BECAUSE THE SOT PRUNES DEAD SUBTASKS UPON DELETION");
         continue;
       }
 
+      //skip visited
+      if (visitedTasks.contains(child.uuid)){ //claude: reverted, no longer unwrapping .target
+        return;
+      }
+
       //if not visited, visit and mark it
-      _createGraphDFS(child, posOffset, currNode, newNodes, newConnections, visitedTasks);
-      visitedTasks.add(child.uuid);
+      visitedTasks.add(child.uuid); //claude: reverted, no longer unwrapping .target
+      _createGraphDFS(child, posOffset, currNode, newNodes, newConnections, visitedTasks); //claude: reverted, no longer unwrapping .target
 
       //update offset
       posOffset += Offset(300, 0);
@@ -111,8 +115,8 @@ class GraphViewModel {
       }
 
       //if not visited, visit and mark it
-      _createGraphDFS(task, startPos, null, newNodes, newConnections, visitedTasks);
       visitedTasks.add(task.uuid);
+      _createGraphDFS(task, startPos, null, newNodes, newConnections, visitedTasks);
 
       //update startPos
       startPos += Offset(300.0 * (1 + task.subtasks.length), 0);

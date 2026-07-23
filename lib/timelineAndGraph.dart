@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 class GraphNode{
   late Offset pos;//position is the id as to not allow 2 nodes to be in the same place
   late Size size;
+  late String text;//this text will be displayed on the node
   String uuid = ""; 
 
   GraphNode(double x,double y,double long, double tall, {this.uuid = ""}){
@@ -21,10 +22,10 @@ class GraphNode{
 } 
 
 class GraphConnections{
-  late GraphNode startNode;
-  late GraphNode endNode;
+  late GraphNode startNode; //claude: reverted to plain GraphNode, no longer using WeakReference
+  late GraphNode endNode; //claude: reverted to plain GraphNode, no longer using WeakReference
 
-  GraphConnections(this.startNode, this.endNode);
+  GraphConnections(this.startNode, this.endNode); //claude: reverted to simple field-initializing constructor
 }
 
 //==================================== HELPER functions ========================================
@@ -56,7 +57,8 @@ class _timelineAndGraphWidgetState extends State<timelineAndGraphWidget> {
   int? draggedNodeInd;
   bool makingConnection = false;
   bool newConnStartOrEndPort = true;//true == start, false == end
-  GraphNode? newConnGrabbedNode;
+  GraphNode? newConnGrabbedNode; //claude: reverted to plain GraphNode?, no longer using WeakReference
+  GraphNode? _newConnAuxNode;
 
   GraphNode? getTouchedNode(Offset pos){
     //go over every node and return only the one touched
@@ -90,7 +92,7 @@ class _timelineAndGraphWidgetState extends State<timelineAndGraphWidget> {
                   for (var node in widget.graphController.nodes) {
                     if( aabb(node, onTapUpDetails.localPosition)){
                       log("touched");
-                      widget.graphController.selectedNode = node;
+                      widget.graphController.selectedNode = node; //claude: reverted, no longer wrapping in WeakReference
                       touchedNothing = false;
                       widget.graphController.moveNode(0, Offset.zero);//TODO this is so the canvas repaints, there must be a better way
                       break;
@@ -107,13 +109,15 @@ class _timelineAndGraphWidgetState extends State<timelineAndGraphWidget> {
 
                   //logic for deselecting
                   if (touchedNothing){
+                    log("deseleted");
+                    widget.graphController.moveNode(0, Offset.zero);//TODO this is so the canvas repaints, there must be a better way
                     widget.graphController.selectedNode = null;
                   }
                 },
                 
                 onPanStart: (onPanDetails) {
                   GraphNode? touchedNode = getTouchedNode(onPanDetails.localPosition);
-                  widget.graphController.selectedNode = touchedNode;
+                  widget.graphController.selectedNode = touchedNode; //claude: reverted, no longer wrapping in WeakReference
                   //if it touched a node, start moving the node
                   if (touchedNode != null){
                     draggedNodeInd = widget.graphController.nodes.indexWhere((node) => node.pos == touchedNode!.pos);
@@ -125,14 +129,14 @@ class _timelineAndGraphWidgetState extends State<timelineAndGraphWidget> {
                       //check if it collided with any port and save it 
                     
                       //if it collided with the top port, set the flag to false to signal its going to be the end port
-                      if (circleCollision(node.topPort, widget.graphController.portRadius, onPanDetails.localPosition)){
-                        newConnGrabbedNode = node;
+                      if (circleCollision(node.topPort, widget.graphController.portRadius + 5, onPanDetails.localPosition)){
+                        newConnGrabbedNode = node; //claude: reverted, no longer wrapping in WeakReference
                         newConnStartOrEndPort = false;
                         makingConnection = true;
                     
                       //else, do the oposite with the bottom port
-                      } else if (circleCollision(node.bottomPort, widget.graphController.portRadius, onPanDetails.localPosition)){
-                        newConnGrabbedNode = node;
+                      } else if (circleCollision(node.bottomPort, widget.graphController.portRadius + 5, onPanDetails.localPosition)){
+                        newConnGrabbedNode = node; //claude: reverted, no longer wrapping in WeakReference
                         newConnStartOrEndPort = true;
                         makingConnection = true;
                       }
@@ -146,11 +150,11 @@ class _timelineAndGraphWidgetState extends State<timelineAndGraphWidget> {
                       widget.graphController.moveNode(draggedNodeInd!, details.delta);
                     
                   } else if (makingConnection) {
-                    log("${details.localPosition}");
+                    _newConnAuxNode = GraphNode(details.localPosition.dx,details.localPosition.dy,1,1);
                     if (newConnStartOrEndPort){
-                      widget.graphController.setNewConnection(GraphConnections(newConnGrabbedNode!, GraphNode(details.localPosition.dx,details.localPosition.dy,1,1)));
+                      widget.graphController.setNewConnection(GraphConnections(newConnGrabbedNode!, _newConnAuxNode!)); //claude: reverted, no longer unwrapping .target
                     } else {
-                      widget.graphController.setNewConnection(GraphConnections(GraphNode(details.localPosition.dx,details.localPosition.dy,1,1), newConnGrabbedNode!));
+                      widget.graphController.setNewConnection(GraphConnections(_newConnAuxNode!, newConnGrabbedNode!)); //claude: reverted, no longer unwrapping .target
                     }
                   }
                 },
@@ -182,9 +186,9 @@ class _timelineAndGraphWidgetState extends State<timelineAndGraphWidget> {
                     //si si esta lo suficientemente cerca de un puerto, crea la conexion
                     if (selectedNode != null) {
                       if (newConnStartOrEndPort) {
-                        widget.graphController.addConnection(GraphConnections(newConnGrabbedNode!, selectedNode));
+                        widget.graphController.addConnection(GraphConnections(newConnGrabbedNode!, selectedNode)); //claude: reverted, no longer unwrapping .target
                       } else {
-                        widget.graphController.addConnection(GraphConnections(selectedNode, newConnGrabbedNode!));
+                        widget.graphController.addConnection(GraphConnections(selectedNode, newConnGrabbedNode!)); //claude: reverted, no longer unwrapping .target
                       }
                     }
                   }
@@ -211,6 +215,7 @@ class timelineAndGraphPainter extends CustomPainter{
   Paint connectionPaint = Paint();
   Paint newConnectionPaint = Paint();
   Paint nodeHighlightPaint = Paint();
+  TextPainter nodeTextPainter = TextPainter(textDirection: .ltr);
   final GraphController controller;
 
   timelineAndGraphPainter(this.controller) : super(repaint: controller) {
@@ -225,10 +230,13 @@ class timelineAndGraphPainter extends CustomPainter{
     nodeHighlightPaint.style = PaintingStyle.stroke;
     nodeHighlightPaint.color = Colors.red;
     nodeHighlightPaint.strokeWidth = 10;
+
+    nodeTextPainter.text = TextSpan(text: "RAAAAAA");
   }
 
   @override
   void paint(Canvas canvas, Size size) {
+    log("PAINTING nodes: ${controller.nodes.length}, conns: ${controller.conns.length}");
     // NEW: draw dot grid background first, so everything else draws on top
     final dotPaint = Paint()..color = Colors.black26;
     const spacing = 50.0;
@@ -240,19 +248,19 @@ class timelineAndGraphPainter extends CustomPainter{
       }
     }
 
-
     //draw connections
     for (var connection in controller.conns) {
-      canvas.drawLine(connection.startNode.bottomPort, connection.endNode.topPort, connectionPaint);
+      canvas.drawLine(connection.startNode.bottomPort, connection.endNode.topPort, connectionPaint); //claude: reverted, no longer unwrapping .target
     }
 
     //draw every node
     for (var node in controller.nodes) {
       //draw body
       canvas.drawRect(Rect.fromLTWH(node.pos.dx, node.pos.dy, node.size.width, node.size.height), nodePaint);
-
+      nodeTextPainter.layout();
+      nodeTextPainter.paint(canvas, node.pos + Offset(node.size.width/2 - nodeTextPainter.size.width/2, node.size.height/2 - nodeTextPainter.size.height/2));
       //highlight selected
-      if (identical(node, controller.selectedNode)){
+      if (identical(node, controller.selectedNode)){ //claude: reverted, compare directly against selectedNode instead of a WeakReference's target
         canvas.drawRect(Rect.fromLTWH(node.pos.dx, node.pos.dy, node.size.width, node.size.height),nodeHighlightPaint);
       }
 
@@ -262,9 +270,8 @@ class timelineAndGraphPainter extends CustomPainter{
     }
 
     //draw the newConnection if it exists
-
     if (controller.newConnection != null) {
-      canvas.drawLine(controller.newConnection!.startNode.bottomPort, controller.newConnection!.endNode.topPort, newConnectionPaint);
+      canvas.drawLine(controller.newConnection!.startNode.bottomPort, controller.newConnection!.endNode.topPort, newConnectionPaint); //claude: reverted, no longer unwrapping .target
     }
   }
 
@@ -280,7 +287,7 @@ class GraphController extends ChangeNotifier {
   List<GraphConnections> conns = List<GraphConnections>.empty(growable: true);
   double portRadius = 6;
   GraphConnections? newConnection;
-  GraphNode? selectedNode;
+  GraphNode? selectedNode; //claude: reverted to plain GraphNode?, no longer using WeakReference
 
   //callbacks
   void Function(GraphNode nodeAdded)? onNodeAddedCallback;
@@ -305,7 +312,7 @@ class GraphController extends ChangeNotifier {
     }
 
     //then delete it
-    deleteNode(selectedNode!);
+    deleteNode(selectedNode!); //claude: reverted, no longer unwrapping .target
 
     //then deselect it 
     selectedNode = null;
@@ -314,10 +321,23 @@ class GraphController extends ChangeNotifier {
   void deleteNode(GraphNode removedNode) {
     nodes.remove(removedNode);
 
+    log("conns before: ${conns.length}");
+
     // also drop any connections that referenced this node, so you don't
     // end up with dangling GraphConnections pointing at a removed node
-    conns.removeWhere((conn) =>
-        identical(conn.startNode, removedNode) || identical(conn.endNode, removedNode));
+    List<GraphConnections> connsToRemove = List.empty(growable: true);
+
+    for (var conn in conns) {
+      if (identical(conn.startNode, removedNode) || identical(conn.endNode, removedNode)){ //claude: reverted, no longer unwrapping .target
+          connsToRemove.add(conn);
+      }
+    }
+
+    for (var conn in connsToRemove) {
+      removeConnection(conn);
+    } 
+
+    log("conns after: ${conns.length}");
 
     notifyListeners();
 
@@ -358,6 +378,7 @@ class GraphController extends ChangeNotifier {
   void replaceNodes(List<GraphNode> newNodes, List<GraphConnections> newConns) {
     nodes = newNodes;
     conns = newConns;
+    log("nodes changed, newNodes: ${nodes.length}, newConns: ${conns.length}");
     notifyListeners();
 
     onGraphReplacedCallback?.call();

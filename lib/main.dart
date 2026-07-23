@@ -35,61 +35,6 @@ void main() {
   databaseFactory = databaseFactoryFfi;
   graphVM =  GraphViewModel(sot: tasksSot, graphController: stratifiedGraphController);
 
-  //TODO remove test data
-  final testTaskTree = TaskModel(
-  "Launch Personal Website",
-  "Build and deploy portfolio site",
-  DateTime(2026, 8, 15),
-  [
-    TaskModel(
-      "Design",
-      "UI/UX mockups",
-      DateTime(2026, 7, 20),
-      [
-        TaskModel("Wireframes", null, DateTime(2026, 7, 12)),
-        TaskModel("Color palette & typography", null, DateTime(2026, 7, 15)),
-        TaskModel(
-          "High-fidelity mockups",
-          "Figma final pass",
-          DateTime(2026, 7, 19),
-        ),
-      ],
-    ),
-    TaskModel(
-      "Development",
-      "Frontend + backend",
-      DateTime(2026, 8, 5),
-      [
-        TaskModel("Set up project scaffold", null, DateTime(2026, 7, 22)),
-        TaskModel(
-          "Build homepage",
-          null,
-          null,
-          [
-            TaskModel("Hero section"),
-            TaskModel("Projects grid"),
-          ],
-        ),
-        TaskModel("Contact form", "Hook up email service"),
-        // no dueDate, no subtasks — null-safety edge case
-      ],
-    ),
-    TaskModel(
-      "Deployment",
-      null,
-      DateTime(2026, 8, 14),
-      [
-        TaskModel("Buy domain"),
-        TaskModel("Configure DNS"),
-        TaskModel("Deploy to hosting", "Cloudflare Pages"),
-      ],
-    ),
-    TaskModel("Leaf task with no subtasks and no description"),
-  ],
-);
-
-  tasksSot.addTask(testTaskTree);
-
   runApp(const MainApp());
 }
 
