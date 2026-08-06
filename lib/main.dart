@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:master_planner/data/db.dart';
 import 'package:master_planner/data/model.dart';
+import 'package:master_planner/overviewPanel.dart';
 import 'package:master_planner/timelineAndGraph.dart';
 import 'package:master_planner/viewModel/graphViewModel.dart';
+import 'package:master_planner/viewModel/overviewViewModel.dart';
 import 'package:master_planner/viewModel/tasksSOT.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:uuid/uuid.dart';
@@ -20,7 +22,9 @@ TasksSOT tasksSot = TasksSOT();
 
 //graphView
 late GraphViewModel graphVM;
+late OverViewViewModel overviewVM;
 GraphController stratifiedGraphController = GraphController();
+OverviewController overviewController = OverviewController();
 
 
 //==================== INTENTS FOR KEYBOARD ASSIGNMENTS =====================
@@ -34,6 +38,7 @@ void main() {
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
   graphVM =  GraphViewModel(sot: tasksSot, graphController: stratifiedGraphController);
+  overviewVM = OverViewViewModel(sot: tasksSot, overviewController: overviewController);
 
   runApp(const MainApp());
 }
@@ -50,11 +55,30 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   //VARS
   var currView = Views.stratifiedGraph;
+  var showOverview = false;
+  var overViewOOBPos = 1000000.0;
+
+  @override
+  void initState() {
+    super.initState();
+    graphVM.onNodeSelectedChanged = _onGraphControllerNodeSelectedChangedDecideIfShowOverview;
+  }
 
   //FUNCS 
   void _changeView(Views newView) {
     setState(() {
       currView = newView;
+    });
+  }
+
+  void _onGraphControllerNodeSelectedChangedDecideIfShowOverview(GraphNode? node){
+    setState(() {
+      if (node != null){
+        showOverview = true;
+        overviewVM.taskUuid = node.uuid;
+      }else{
+        showOverview = false;
+      }
     });
   }
 
@@ -84,11 +108,19 @@ class _MainAppState extends State<MainApp> {
                 ],
               ),
             ),
-            body: switch (currView) {
-              Views.graph => GraphTaskView(),
-              Views.tabbedText => TabbedTextTaskView(),
-              _ => Column()
-            }
+            body: Stack(
+              children: [
+                //the main views
+                switch (currView) {
+                  Views.graph => GraphTaskView(),
+                  Views.tabbedText => TabbedTextTaskView(),
+                  _ => OverviewPanel(controller: overviewController,)
+                },
+
+                //The overview always on top, can be shown on demand
+                Positioned(left: MediaQuery.of(context).size.width - 400, top: showOverview ?  50 : overViewOOBPos, child: OverviewPanel(controller: overviewController,)), //TODO: currently the way the overview is hidden is by actually just moving it out of thw way, kinda janky
+                ],
+              )
           ),
         ),
       ),
@@ -148,7 +180,9 @@ class _GraphTaskViewState extends State<GraphTaskView> {
           Expanded(
             child: Row(
               children: [ 
-                Expanded(child: timelineAndGraphWidget(graphController: stratifiedGraphController))    
+                Expanded(
+                  child: timelineAndGraphWidget(graphController: stratifiedGraphController),
+                )    
               ]
             ),
           ),

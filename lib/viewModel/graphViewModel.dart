@@ -25,15 +25,18 @@ class GraphViewModel {
   //final Map<String, GraphNode> idToNode = Map.from({});
   final Map<String, NodeVisualizationData> idToVisualizationData = Map.from({});
 
+  void Function (GraphNode? node)? onNodeSelectedChanged;
+
 
   //constructor
-  GraphViewModel({required this.sot, required this.graphController}) {
+  GraphViewModel({required this.sot, required this.graphController, this.onNodeSelectedChanged}) {
     sot.addListener(_updateGraph);
     
     //set graph callbacks
     graphController.onConnectionAddedCallback = _addConnection;
     graphController.onNodeDeletedCallback = _deleteTaskNode;
     graphController.onNodeMovedCallback = _updateNodeVisualizationData;
+    graphController.onSelectedNodeChangedCallback =  _onNodeSelectedChangedCallback;
   }
 
   //listeners
@@ -55,6 +58,10 @@ class GraphViewModel {
     idToVisualizationData[node.uuid] = NodeVisualizationData(node.pos);
   }
 
+  void _onNodeSelectedChangedCallback(GraphNode? node){
+    onNodeSelectedChanged?.call(node);
+  }
+
   //helper bfs
   void _createGraphDFS(TaskModel currTask ,Offset posOffset, GraphNode? parent,final List<GraphNode> newNodes, final List<GraphConnections> newConnections, final Set<String> visitedTasks){
     //load visualization data if i have
@@ -65,7 +72,7 @@ class GraphViewModel {
     }
 
     //create and add curr node
-    GraphNode currNode = GraphNode(posOffset.dx, posOffset.dy, 200, 100, uuid: currTask.uuid);
+    GraphNode currNode = GraphNode(posOffset.dx, posOffset.dy, 200, 100, uuid: currTask.uuid, text: currTask.title);
     log("task to be added: ${currNode.uuid}, parent: ${parent}");
     newNodes.add(currNode);
 
@@ -127,10 +134,10 @@ class GraphViewModel {
 
   //=================================== methods for the view ============================
   void addTaskNode(){
-    sot.addTask(TaskModel("new task"));
+    sot.addTask(TaskModel("new task2"));
   }
 
   void deleteSelectedTaskNode(){
-    graphController.deleteSelectedNode();//absolutely crazy workflow, this calls graph controller which calls this._deleteTaskNode which calls the sot
+    graphController.deleteSelectedNode();//absolutely crazy workflow, this calls graph controller which calls this._deleteTaskNode which calls the sot which notifies listeners which this is a listener of? why doesnt this loop?
   }
 }

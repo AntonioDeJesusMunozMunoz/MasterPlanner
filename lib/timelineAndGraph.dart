@@ -9,10 +9,10 @@ import 'package:flutter/material.dart';
 class GraphNode{
   late Offset pos;//position is the id as to not allow 2 nodes to be in the same place
   late Size size;
-  late String text;//this text will be displayed on the node
+  String text = "";//this text will be displayed on the node
   String uuid = ""; 
 
-  GraphNode(double x,double y,double long, double tall, {this.uuid = ""}){
+  GraphNode(double x,double y,double long, double tall, {this.uuid = "", this.text = ""}){
     pos = Offset(x, y);
     size = Size(long, tall);
   }
@@ -257,8 +257,12 @@ class timelineAndGraphPainter extends CustomPainter{
     for (var node in controller.nodes) {
       //draw body
       canvas.drawRect(Rect.fromLTWH(node.pos.dx, node.pos.dy, node.size.width, node.size.height), nodePaint);
+
+      //draw text
+      nodeTextPainter.text = TextSpan(text: node.text);
       nodeTextPainter.layout();
       nodeTextPainter.paint(canvas, node.pos + Offset(node.size.width/2 - nodeTextPainter.size.width/2, node.size.height/2 - nodeTextPainter.size.height/2));
+
       //highlight selected
       if (identical(node, controller.selectedNode)){ //claude: reverted, compare directly against selectedNode instead of a WeakReference's target
         canvas.drawRect(Rect.fromLTWH(node.pos.dx, node.pos.dy, node.size.width, node.size.height),nodeHighlightPaint);
@@ -287,13 +291,21 @@ class GraphController extends ChangeNotifier {
   List<GraphConnections> conns = List<GraphConnections>.empty(growable: true);
   double portRadius = 6;
   GraphConnections? newConnection;
-  GraphNode? selectedNode; //claude: reverted to plain GraphNode?, no longer using WeakReference
-
+  GraphNode? _selectedNode; //claude: renamed to private backing field; use the selectedNode getter/setter below instead of touching this directly
   //callbacks
   void Function(GraphNode nodeAdded)? onNodeAddedCallback;
   void Function(GraphNode nodeDeleted)? onNodeDeletedCallback;
   void Function(GraphNode nodeMoved)? onNodeMovedCallback;
   void Function(GraphConnections connAdded)? onConnectionAddedCallback;
+
+  void Function(GraphNode? selectedNode)? onSelectedNodeChangedCallback; //claude: new callback hook, fired whenever selectedNode changes via the setter below
+
+  GraphNode? get selectedNode => _selectedNode; //claude: new getter — every existing `graphController.selectedNode` read keeps working unchanged
+  set selectedNode(GraphNode? node) { //claude: new setter — every existing `graphController.selectedNode = x` assignment keeps working unchanged, but now runs this logic too
+    _selectedNode = node;
+    onSelectedNodeChangedCallback?.call(node); //claude: put whatever needs to run on selection change here, or hook it up via this callback from outside
+  }
+
   void Function(GraphConnections connRemoved)? onConnectionRemovedCallback;
   void Function()? onGraphReplacedCallback;
 

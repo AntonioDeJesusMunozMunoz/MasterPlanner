@@ -39,8 +39,12 @@ SOLUTION
 * of course, since this is the source of truth, here is also the method to save and load from the database
 */
 class TasksSOT extends ChangeNotifier {
-  //list of all tasksa
-  final List<TaskModel> tasks = List.empty(growable: true);//TODO make it cear you shouldnt touch this directly
+  //list of all tasks
+  final List<TaskModel> _tasks = List.empty(growable: true);//TODO make it cear you shouldnt touch this directly
+
+  List<TaskModel> get tasks{
+    return _tasks;
+  }
 
   //create a task
   void createTask(){
@@ -61,6 +65,16 @@ class TasksSOT extends ChangeNotifier {
   void addTask(TaskModel task){
     this.tasks.add(task);
     log("tasks after adding new one: ${tasks.length}");
+    notifyListeners();
+  }  
+
+  //update the value of a tasks associated with a uuid
+  void setTask(TaskModel newData){
+    int idx = _tasks.indexWhere((task) => task.uuid == newData.uuid);
+    assert(idx != -1);
+    
+    _tasks[idx].updateFrom(newData);
+    log("OOOHOHHHOHOHOHO");
     notifyListeners();
   }
 
