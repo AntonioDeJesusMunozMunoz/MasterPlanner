@@ -4,7 +4,7 @@ import 'package:master_planner/utils.dart';
 import 'package:uuid/uuid.dart';
 
 enum TaskLoad{NONE, SMALL, MEDIUM, BIG, MASSIVE}
-enum TaskState{OPEN, IN_PROGRESS, IN_SLOW_PROGRESS ,DONE}
+enum TaskState{OPEN, INDISPENSABLE, PLANEO, IN_PROGRESS, IN_SLOW_PROGRESS ,DONE}
 
 //THIS MODEL DOES NOT STORE ANYTHING RELATED TO VISUALIZATION SUCH AS "Position", THAT SHOULD BE STORED BY SAVEABLE VISUALIZATIONS
 class TaskModel {

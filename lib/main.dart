@@ -7,15 +7,17 @@ import 'package:master_planner/data/db.dart';
 import 'package:master_planner/data/model.dart';
 import 'package:master_planner/overviewPanel.dart';
 import 'package:master_planner/timelineAndGraph.dart';
+import 'package:master_planner/todayView.dart';
 import 'package:master_planner/viewModel/graphViewModel.dart';
 import 'package:master_planner/viewModel/overviewViewModel.dart';
 import 'package:master_planner/viewModel/tasksSOT.dart';
+import 'package:master_planner/viewModel/todayViewModel.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:uuid/uuid.dart';
 
 //constants
 var uuid = Uuid();
-enum Views {graph,tabbedText,stratifiedGraph}
+enum Views {graph,tabbedText,stratifiedGraph, today}
 
 //===================== view variables =================================
 TasksSOT tasksSot = TasksSOT();
@@ -23,8 +25,10 @@ TasksSOT tasksSot = TasksSOT();
 //graphView
 late GraphViewModel graphVM;
 late OverViewViewModel overviewVM;
+late TodayViewModel todayVM;
 GraphController stratifiedGraphController = GraphController();
 OverviewController overviewController = OverviewController();
+TodayViewController todayViewController = TodayViewController();
 
 
 //==================== INTENTS FOR KEYBOARD ASSIGNMENTS =====================
@@ -39,6 +43,7 @@ void main() {
   databaseFactory = databaseFactoryFfi;
   graphVM =  GraphViewModel(sot: tasksSot, graphController: stratifiedGraphController);
   overviewVM = OverViewViewModel(sot: tasksSot, overviewController: overviewController);
+  todayVM = TodayViewModel(sot: tasksSot, todayViewController: todayViewController);
 
   runApp(const MainApp());
 }
@@ -55,7 +60,7 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   //VARS
   var currView = Views.stratifiedGraph;
-  var showOverview = false;
+  var shouldShowOverview = false;
   var overViewOOBPos = 1000000.0;
 
   @override
@@ -74,11 +79,18 @@ class _MainAppState extends State<MainApp> {
   void _onGraphControllerNodeSelectedChangedDecideIfShowOverview(GraphNode? node){
     setState(() {
       if (node != null){
-        showOverview = true;
+        shouldShowOverview = true;
         overviewVM.taskUuid = node.uuid;
       }else{
-        showOverview = false;
+        shouldShowOverview = false;
       }
+    });
+  }
+  void showOverview(TaskModel task){
+    setState(() {
+      log("OHHHH MA GAAD");
+      shouldShowOverview = !shouldShowOverview || overviewVM.taskUuid != task.uuid; //toggle show overview
+      overviewVM.taskUuid = task.uuid;
     });
   }
 
@@ -105,6 +117,7 @@ class _MainAppState extends State<MainApp> {
                   ListTile(leading: Icon(Icons.text_fields), title: Text('Tabbed text'), onTap: () => _changeView(Views.tabbedText)),
                   ListTile(leading: Icon(Icons.calendar_month), title: Text('Calendar'), onTap: () => _changeView(Views.graph)),
                   ListTile(leading: Icon(Icons.account_tree_outlined), title: Text('Stratified tree'), onTap: () => _changeView(Views.stratifiedGraph)),
+                  ListTile(leading: Icon(Icons.date_range), title: Text('Today'), onTap: () => _changeView(Views.today)),
                 ],
               ),
             ),
@@ -114,11 +127,12 @@ class _MainAppState extends State<MainApp> {
                 switch (currView) {
                   Views.graph => GraphTaskView(),
                   Views.tabbedText => TabbedTextTaskView(),
+                  Views.today => TodayView(controller: todayViewController, onTaskClickedCallback: showOverview,),
                   _ => OverviewPanel(controller: overviewController,)
                 },
 
                 //The overview always on top, can be shown on demand
-                Positioned(left: MediaQuery.of(context).size.width - 400, top: showOverview ?  50 : overViewOOBPos, child: OverviewPanel(controller: overviewController,)), //TODO: currently the way the overview is hidden is by actually just moving it out of thw way, kinda janky
+                Positioned(left: MediaQuery.of(context).size.width - 400, top: shouldShowOverview ?  50 : overViewOOBPos, child: OverviewPanel(controller: overviewController,)), //TODO: currently the way the overview is hidden is by actually just moving it out of thw way, kinda janky
                 ],
               )
           ),

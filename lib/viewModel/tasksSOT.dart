@@ -74,7 +74,6 @@ class TasksSOT extends ChangeNotifier {
     assert(idx != -1);
     
     _tasks[idx].updateFrom(newData);
-    log("OOOHOHHHOHOHOHO");
     notifyListeners();
   }
 
