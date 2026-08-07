@@ -30,7 +30,6 @@ GraphController stratifiedGraphController = GraphController();
 OverviewController overviewController = OverviewController();
 TodayViewController todayViewController = TodayViewController();
 
-
 //==================== INTENTS FOR KEYBOARD ASSIGNMENTS =====================
 class DeleteIntent extends Intent {
 
@@ -162,11 +161,13 @@ class _GraphTaskViewState extends State<GraphTaskView> {
   }
 
   void _saveGraph() async{
-
+    log("SAVING");
+    await TaskRepository.saveGraph(tasksSot.toJsonString());
   }
 
   void _loadGraph() async{
-
+    log("LOADING");
+    tasksSot.fromJsonString(await TaskRepository.loadGraph());
   }
 
   void test(){

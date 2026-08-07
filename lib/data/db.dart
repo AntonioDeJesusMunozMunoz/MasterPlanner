@@ -62,7 +62,7 @@ class TaskRepository {
       
       //if empty, return empy dict
       if (resultList.isEmpty){
-        return '{"nodes":[],"connections":[],"viewport":{"x":0.0,"y":0.0,"zoom":1.0},"metadata":{}}';
+        return '{"nodes":[]}';
       }
 
       //else return the actual data

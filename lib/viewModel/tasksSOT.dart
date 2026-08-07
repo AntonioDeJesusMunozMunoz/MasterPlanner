@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -40,7 +41,7 @@ SOLUTION
 */
 class TasksSOT extends ChangeNotifier {
   //Map of all tasks
-  final Map<String,TaskModel> taskMap = {};
+  Map<String,TaskModel> taskMap = {};
 
   List<TaskModel> get tasks{
     return taskMap.values.toList();
@@ -80,18 +81,24 @@ class TasksSOT extends ChangeNotifier {
     return tasks.any((currTask) => identical(currTask, task));
   }
 
-  //load data from memory
+  //Serialization funcs
+  String toJsonString(){
+    return jsonEncode(taskMap);
+  }
 
-  //save data to memory
-
+  void fromJsonString(String jsonString){
+    final raw = jsonDecode(jsonString) as Map<String, dynamic>;
+    taskMap = raw.map((key, value) => MapEntry(key, TaskModel.fromJson(value as Map<String, dynamic>)));
+    notifyListeners();
+  }
 
   // ================================ HELPERS =========================
   void pruneDeadSubtasks(){
-    log("PRUNNING DEADA SUBTasks");
+    log("PRUNNING DEAD SUBTasks");
     //por cada task
     for (var currTask in tasks){
-      //remove any subtask reference that no longer exists in tasks //claude: reverted from WeakReference null-check to a containsTask lookup
-      currTask.subtasks.removeWhere((subtask) => !containsTask(subtask));
+      //remove any subtask reference that no longer exists in tasks 
+      currTask.subtasks.removeWhere((subtask) => !taskMap.keys.contains(subtask));
     }
   }
 }

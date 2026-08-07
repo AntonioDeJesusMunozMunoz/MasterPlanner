@@ -45,8 +45,8 @@ class GraphViewModel {
   }
 
   void _addConnection(GraphConnections conn){
-    TaskModel parentTask = sot.tasks.firstWhere((task) {return task.uuid == conn.startNode.uuid;}); //claude: reverted, no longer unwrapping .target
-    parentTask.subtasks.add(sot.tasks.firstWhere((task) => task.uuid == conn.endNode.uuid)); //claude: reverted, adding the TaskModel directly instead of wrapping in WeakReference
+    TaskModel parentTask = sot.taskMap[conn.startNode.uuid]!;
+    parentTask.subtasks.add(conn.endNode.uuid);
   }
 
   void _deleteTaskNode(GraphNode node){
@@ -85,7 +85,8 @@ class GraphViewModel {
     posOffset += Offset(-400,150);  
 
     //repeat for children
-    for (var child in currTask.subtasks) {
+    for (var childUuid in currTask.subtasks) {
+      TaskModel child = sot.taskMap[childUuid]!;
       //skip subtasks that no longer exist in the sot //claude: reverted from a null .target check to a sot.containsTask lookup, since subtasks is now a plain List<TaskModel>
       if (!sot.containsTask(child)){
         log("THIS SHOULD NEVER RUN BECAUSE THE SOT PRUNES DEAD SUBTASKS UPON DELETION");
