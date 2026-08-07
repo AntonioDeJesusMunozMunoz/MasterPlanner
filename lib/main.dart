@@ -236,7 +236,7 @@ class _TabbedTextTaskViewState extends State<TabbedTextTaskView> {
   //the convertion process was made with ai, so its a blackbox basically
   Future<void> getTabbedText() async {
     //loads the text
-    var graphJson = await taskStorageDBHelper.loadGraph();
+    var graphJson = await TaskRepository.loadGraph();
 
     //converts it 
     final json = jsonDecode(graphJson);

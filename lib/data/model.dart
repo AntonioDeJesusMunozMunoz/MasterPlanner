@@ -22,15 +22,18 @@ class TaskModel {
   //serialization funcs
   Map<String,dynamic> toJson() {
     return {
+      'uuid':uuid,
       'title':title,
       'description':description,
       'dueDate':dueDate.toString(),
+      'load':load,
+      'state':state,
+      'subtasks':subtasks.map((task) => task.uuid).toList()
     };
   }
   
   static TaskModel fromJson(Map<String,dynamic> json){
-    log(json['dueDate']);
-    return TaskModel(json['title'], description:  json['description'],dueDate:  json['dueDate'] == 'null' ? null :  DateTime.parse(json['dueDate']));
+    return TaskModel(json['title'], description:  json['description'], dueDate:  json['dueDate'] == 'null' ? null :  DateTime.parse(json['dueDate']));
   }
 
   void updateFrom(TaskModel other) {

@@ -39,23 +39,24 @@ SOLUTION
 * of course, since this is the source of truth, here is also the method to save and load from the database
 */
 class TasksSOT extends ChangeNotifier {
-  //list of all tasks
-  final List<TaskModel> _tasks = List.empty(growable: true);//TODO make it cear you shouldnt touch this directly
+  //Map of all tasks
+  final Map<String,TaskModel> taskMap = {};
 
   List<TaskModel> get tasks{
-    return _tasks;
+    return taskMap.values.toList();
   }
 
   //create a task
   void createTask(){
-    tasks.add(TaskModel("newTask"));
+    TaskModel newTask = TaskModel("newTask");
+    taskMap[newTask.uuid] = newTask;
     notifyListeners();
   }
 
   //delete task, deletes a task by instance
   void deleteTask(String uuid){
     log("tasks before: ${tasks.length}");
-    tasks.removeWhere((currTask) {return currTask.uuid == uuid;});
+    taskMap.removeWhere((currUuid,task) => currUuid == uuid);
     log("tasks after: ${tasks.length}");
     pruneDeadSubtasks();
     notifyListeners();
@@ -63,17 +64,14 @@ class TasksSOT extends ChangeNotifier {
 
   //add an externally created task
   void addTask(TaskModel task){
-    this.tasks.add(task);
+    taskMap[task.uuid] = task;
     log("tasks after adding new one: ${tasks.length}");
     notifyListeners();
   }  
 
   //update the value of a tasks associated with a uuid
   void setTask(TaskModel newData){
-    int idx = _tasks.indexWhere((task) => task.uuid == newData.uuid);
-    assert(idx != -1);
-    
-    _tasks[idx].updateFrom(newData);
+    taskMap[newData.uuid]!.updateFrom(newData);
     notifyListeners();
   }
 

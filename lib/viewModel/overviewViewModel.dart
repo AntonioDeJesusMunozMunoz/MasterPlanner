@@ -2,6 +2,8 @@
 Connects the overview panel to the SOT
 */
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:master_planner/data/model.dart';
 import 'package:master_planner/overviewPanel.dart';
@@ -70,7 +72,14 @@ class OverViewViewModel{
   */
   void updateOverviewPanel(){
     if (taskUuid != null){
-      TaskModel theTask = sot.tasks.firstWhere((task) => task.uuid == taskUuid);
+      //if the task isnt present, it warns and returns
+      if (!sot.tasks.any((task) => task.uuid == taskUuid)){
+        log("[WARNING] overviews task is no longer alive");
+        taskUuid == null;
+        return;
+      }
+
+      TaskModel? theTask = sot.tasks.firstWhere((task) => task.uuid == taskUuid,);
       overviewController.titleController.text = theTask.title;
       overviewController.descriptionController.text = theTask.description == null ? "" : theTask.description!;
       overviewController.loadController.selectedValue = theTask.load;

@@ -134,7 +134,7 @@ class GraphViewModel {
 
   //=================================== methods for the view ============================
   void addTaskNode(){
-    sot.addTask(TaskModel("new task2"));
+    sot.addTask(TaskModel("new task"));
   }
 
   void deleteSelectedTaskNode(){

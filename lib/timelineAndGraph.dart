@@ -146,6 +146,13 @@ class _timelineAndGraphWidgetState extends State<timelineAndGraphWidget> {
                     
                 onPanUpdate: (details) {
                   if (draggedNodeInd != null){
+                      //make sure it hasnt died
+                      if (widget.graphController.nodes.isEmpty){
+                        log("[WARNING] tried to drag when theres no nodes");
+                        draggedNodeInd = null;
+                        return;
+                      }
+
                       //update pos
                       widget.graphController.moveNode(draggedNodeInd!, details.delta);
                     

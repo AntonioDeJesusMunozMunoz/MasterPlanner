@@ -1,11 +1,11 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-class taskStorageDBHelper {
-  static final taskStorageDBHelper instance = taskStorageDBHelper._init();
+class TaskRepository {
+  static final TaskRepository instance = TaskRepository._init();
   static Database? _db;
 
-  taskStorageDBHelper._init();
+  TaskRepository._init();
 
    static Future<Database> getDB() async{
       //if it doesnt exist, initialize it
