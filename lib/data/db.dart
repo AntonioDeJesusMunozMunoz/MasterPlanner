@@ -21,7 +21,7 @@ class TaskRepository {
     final pathToDB = join(await getDatabasesPath(), 'taskStorageDB.db');
 
     //return the database in that path
-    return await openDatabase(pathToDB, version: 1, onCreate: _onCreate);
+    return await openDatabase(pathToDB, version: 2, onCreate: _onCreate);
 
    }
 

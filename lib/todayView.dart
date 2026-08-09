@@ -43,7 +43,7 @@ class _TodayViewState extends State<TodayView> {
             height: MediaQuery.of(context).size.height,
              child: Column(
               children: [
-              ...widget.controller.tasksToShow.map((task) => TodayViewListItem(task: task, onClickedCallback: widget.onTaskClickedCallback))
+              ...widget.controller.tasksToShow.map((task) => TodayViewListItem(task: task, onClickedCallback: widget.onTaskClickedCallback)),
               ],
             ),
     );

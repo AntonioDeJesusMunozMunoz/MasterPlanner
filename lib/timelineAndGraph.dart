@@ -293,6 +293,8 @@ class timelineAndGraphPainter extends CustomPainter{
   }
 }
 
+
+// ============================================= CONTROLLER ======================================
 class GraphController extends ChangeNotifier {
   List<GraphNode> nodes = List<GraphNode>.empty(growable: true); //TODO make it clear you shouldnt touch this directly
   List<GraphConnections> conns = List<GraphConnections>.empty(growable: true);
@@ -403,3 +405,6 @@ class GraphController extends ChangeNotifier {
     onGraphReplacedCallback?.call();
   }
 }
+
+
+

@@ -39,6 +39,7 @@ SOLUTION
 * all view models are mere representations of facets of the data in here
 * of course, since this is the source of truth, here is also the method to save and load from the database
 */
+
 class TasksSOT extends ChangeNotifier {
   //Map of all tasks
   Map<String,TaskModel> taskMap = {};
@@ -91,7 +92,7 @@ class TasksSOT extends ChangeNotifier {
     taskMap = raw.map((key, value) => MapEntry(key, TaskModel.fromJson(value as Map<String, dynamic>)));
     notifyListeners();
   }
-
+  
   // ================================ HELPERS =========================
   void pruneDeadSubtasks(){
     log("PRUNNING DEAD SUBTasks");

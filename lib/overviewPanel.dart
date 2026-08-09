@@ -2,17 +2,6 @@
 Panel that shows an editable form of the all the fields of the current task selected
 */
 
-/*
-  late final uuid = genUniqueID();
-  String title = "task title";
-  String? description;
-  DateTime? dueDate; 
-  TaskLoad load = .NONE;
-  TaskState state = .OPEN;
-  List<TaskModel> subtasks = List.empty(growable: true); //claude: reverted to plain List<TaskModel>, no longer using WeakReference
-
-*/
-
 import 'dart:developer';
 
 import 'package:flutter/material.dart';

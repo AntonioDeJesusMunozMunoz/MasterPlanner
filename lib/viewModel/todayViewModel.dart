@@ -4,6 +4,7 @@ TODAY VIEW MODEL
 -also to connect the sot
 */
 
+import 'package:master_planner/data/model.dart';
 import 'package:master_planner/todayView.dart';
 import 'package:master_planner/viewModel/tasksSOT.dart';
 
