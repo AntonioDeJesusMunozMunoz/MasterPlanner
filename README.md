@@ -1,25 +1,32 @@
+[Español](README.es.md)
+
 # **Master Planner**
-Una aplicación de Flutter para organización personal, desde tareas pequeñas y diarias hasta proyectos grandes y complejos de software con muchas partes.
-Se compone de varias vistas para visualizar las tareas de distintas formas, todas sobre el mismo modelo de datos.
-## **Vistas**
-- **Vista de árbol (principal):** las tareas y subtareas se visualizan como un árbol, donde el eje Y representa el tiempo. Esto permite ver dependencias entre tareas, deadlines, y tener una overview de cómo va el proyecto completo.
-- **Today view:** una lista simple de lo que se tiene que terminar hoy o lo que se planea hacer hoy.
-- **Texto tabulado:** las tareas se pueden ver como texto tabulado, donde las tabulaciones marcan jerarquía (similar a Python).
-- En el futuro se planea añadir más vistas, posiblemente kanban o SCRUM.
-## **Estado actual**
-Corre actualmente en desktop. Se está añadiendo la funcionalidad de trabajar en equipo con otras personas, usando un backend en Cloudflare. Posiblemente funcione en Android más adelante.
-## **Dependencias**
+A Flutter app for personal organization, from small daily tasks to large, complex software projects with many moving parts.
+It's built around several views for visualizing tasks in different ways, all on top of the same underlying data model.
+
+## **Views**
+- **Tree view (main):** tasks and subtasks are visualized as a tree, where the Y axis represents time. This makes it possible to see dependencies between tasks, deadlines, and get an overview of how the whole project is progressing.
+- **Today view:** a simple list of what needs to get done today, or what's planned for today.
+- **Tabbed text:** tasks can also be viewed as tabbed text, where indentation marks hierarchy (similar to Python).
+- More views are planned for the future, possibly kanban or SCRUM.
+
+## **Current status**
+Currently runs on desktop. Collaborative, multi-person functionality is being added, using a Cloudflare-based backend. It may support Android further down the line.
+
+## **Dependencies**
 ```yaml
-uuid: ^4.5.3            # para dar ids únicos a los elementos (especialmente nodos del grafo)
-sqflite: ^2.4.3          # para guardar los datos del grafo
+uuid: ^4.5.3            # gives unique ids to elements (especially graph nodes)
+sqflite: ^2.4.3          # stores the graph's data
 sqflite_common_ffi: any
-path: ^1.9.1             # para obtener el path a la base de datos de sqflite
+path: ^1.9.1             # gets the path to the sqflite database
 ```
-## **Instalación**
-Funciona como un proyecto de Flutter normal:
+
+## **Installation**
+Works like a normal Flutter project:
 ```bash
 flutter pub get
 flutter run
 ```
-## **Licencia**
+
+## **License**
 MIT
