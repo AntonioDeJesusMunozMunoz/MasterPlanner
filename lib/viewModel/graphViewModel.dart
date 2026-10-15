@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:core';
+import 'dart:math' show min, max;
 
 import 'package:flutter/material.dart';
 import 'package:master_planner/data/model.dart';
@@ -18,6 +19,11 @@ class NodeVisualizationData {
 * INTERFACE CLASS FOR COMUNICATING THE TASKS
 * the view manages the graph through here as to keep graph and sot synched
 */
+
+const double MAX_RIGHT_OFFSET = 10000;
+const double MAX_DOWN_OFFSET = 5000;
+const double MIN_LEFT_OFFSET = 0;
+const double MIN_UP_OFFSET = 0;
 
 class GraphViewModel {
   late final TasksSOT sot;
@@ -72,6 +78,10 @@ class GraphViewModel {
     }
 
     //create and add curr node
+    posOffset = Offset(//clamp before accepting
+      posOffset.dx.clamp(MIN_LEFT_OFFSET, MAX_RIGHT_OFFSET).toDouble(),
+      posOffset.dy.clamp(MIN_UP_OFFSET, MAX_DOWN_OFFSET).toDouble(),
+    );
     GraphNode currNode = GraphNode(posOffset.dx, posOffset.dy, 200, 100, uuid: currTask.uuid, text: currTask.title);
     log("task to be added: ${currNode.uuid}, parent: ${parent}");
     newNodes.add(currNode);
@@ -81,8 +91,9 @@ class GraphViewModel {
       newConnections.add(GraphConnections(parent, currNode));
     } 
 
-    //prepare offset
+    //prepare offset starting more left and down in respect of me
     posOffset += Offset(-400,150);  
+    posOffset = Offset(max(posOffset.dx, MIN_LEFT_OFFSET), min(posOffset.dy, MAX_DOWN_OFFSET));//cap bounds
 
     //repeat for children
     for (var childUuid in currTask.subtasks) {
@@ -99,11 +110,13 @@ class GraphViewModel {
       }
 
       //if not visited, visit and mark it
-      visitedTasks.add(child.uuid); //claude: reverted, no longer unwrapping .target
-      _createGraphDFS(child, posOffset, currNode, newNodes, newConnections, visitedTasks); //claude: reverted, no longer unwrapping .target
+      visitedTasks.add(child.uuid); 
+      //recurr setting child posOffset to the prepared one
+      _createGraphDFS(child, posOffset, currNode, newNodes, newConnections, visitedTasks); 
 
-      //update offset
+      //move offset for next child
       posOffset += Offset(300, 0);
+      posOffset = Offset(min(posOffset.dx, MAX_RIGHT_OFFSET), min(posOffset.dy, MAX_DOWN_OFFSET));//cap upper offset bounds
     }
   }
 
