@@ -106,6 +106,7 @@ class _MainAppState extends State<MainApp> {
           )
         },
         child: MaterialApp(
+          debugShowCheckedModeBanner: false,
           home:  Scaffold(
             appBar: AppBar(backgroundColor: Colors.lightGreen,),
             drawer: Drawer(
@@ -311,3 +312,6 @@ class _TabbedTextTaskViewState extends State<TabbedTextTaskView> {
     );
   }
 }
+
+//alt + shift + h   for seeing the function call daisy chain
+//alt + f12         to see uses of a given function 

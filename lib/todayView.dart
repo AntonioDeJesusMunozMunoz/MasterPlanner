@@ -100,7 +100,7 @@ String _stateLabel(TaskState state) {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.grey.shade300, width: 1),
-          boxShadow: [
+          boxShadow: [  
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
               blurRadius: 6,
